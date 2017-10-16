@@ -5,45 +5,48 @@
 #ifndef SLOTTED_ALOHA_NODE_H
 #define SLOTTED_ALOHA_NODE_H
 
+#include <random>
 
-class Node {
-private:
-    double q_retransmit;
-    bool backlog;
-
+class BasicNode{
 public:
-    Node(){
-        this->q_retransmit = 0.1;
-        this->backlog = false;
-    }
+    BasicNode(double qa);
+    virtual bool step(double qr, int step) = 0;
+    static void initRandomizer();
+    bool get_backlog();
+    bool gotNewPacket();
+    int getDelay(int departureSlot);
 
-    Node(double const &qr){
-        this->q_retransmit = qr;
-        this->backlog = false;
-    }
+protected:
+    double qa;
+    bool backlog;
+    int arrivalSlot;
+    bool newPacket;
+    static std::uniform_real_distribution<double> randomUniDistr;
+    static std::default_random_engine engine;
 
-    double get_q_retransmit(){
-        return this->q_retransmit;
-    }
-
-    bool backlogged(){
-        return this->backlog;
-    }
-
-    //Return true if successful retransmission
-    bool retransmit(){
-
-    }
-
-    //Return true if packet is transmitted successful the first time
-    bool transmit(){
-
-    }
-    void set_backlog(bool backlogged){
-        this->backlog = backlogged;
-    }
-
+private:
 };
 
+//Normal node used in slotted ALOHA without PB stabilization
+class Node : public BasicNode{
+public:
+    Node(double qa) : BasicNode(qa) {}
+    virtual bool step(double qr, int slotNumber);
+
+protected:
+
+private:
+};
+
+//Node with PB stabilization implemented
+class PseudoBayesianNode : public BasicNode{
+public:
+    PseudoBayesianNode(double qa) : BasicNode(qa) {}
+    virtual bool step(double qr, int slotNumber);
+
+protected:
+
+private:
+};
 
 #endif //SLOTTED_ALOHA_NODE_H
